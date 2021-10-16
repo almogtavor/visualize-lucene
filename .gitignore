@@ -1,0 +1,57 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+.idea/$PROJECT_FILE$
+.idea/compiler.xml
+.idea/dbnavigator.xml
+.idea/google-java-format.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/jarRepositories.xml
+.idea/misc.xml
+.idea/qaplug_profiles.xml
+.idea/runConfigurations.xml
+.idea/sonarlint/issuestore/index.pb
+.idea/uiDesigner.xml
+.idea/vcs.xml
+.idea/workspace.xml
+codeLuceneindex-viz-output/_0.cfe
+codeLuceneindex-viz-output/_0.cfs
+codeLuceneindex-viz-output/_0.si
+codeLuceneindex-viz-output/_1.cfe
+codeLuceneindex-viz-output/_1.cfs
+codeLuceneindex-viz-output/_1.si
+codeLuceneindex-viz-output/_2.cfe
+codeLuceneindex-viz-output/_2.cfs
+codeLuceneindex-viz-output/_2.si
+codeLuceneindex-viz-output/_3.cfe
+codeLuceneindex-viz-output/_3.cfs
+codeLuceneindex-viz-output/_3.si
+codeLuceneindex-viz-output/_4.cfe
+codeLuceneindex-viz-output/_4.cfs
+codeLuceneindex-viz-output/_4.si
+codeLuceneindex-viz-output/segments_5
+codeLuceneindex-viz-output/write.lock
+target/classes/application.properties
+target/classes/log4j2.xml
+target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst
+target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
