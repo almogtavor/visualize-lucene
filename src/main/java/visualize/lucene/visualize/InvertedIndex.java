@@ -1,4 +1,4 @@
-package visualize.lucene.calculate;
+package visualize.lucene.visualize;
 
 import lombok.Getter;
 import org.apache.lucene.analysis.Analyzer;
@@ -27,7 +27,7 @@ public class InvertedIndex {
     private static final Logger logger = Logger.getLogger(String.valueOf(Inverted.class));
     @Getter
     private static Map<String, Set<String>> invertedIndex;
-    private static Path path;
+    private Path path;
 
     public InvertedIndex(Path path) {
         this.path = path;

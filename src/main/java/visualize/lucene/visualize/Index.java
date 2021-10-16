@@ -1,4 +1,4 @@
-package visualize.lucene.calculate;
+package visualize.lucene.visualize;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
@@ -15,8 +15,8 @@ public class Index {
         WEB
     }
 
-    public Index(String[] fields, IndexSearcher searcher, ScoreDoc[] hits) {
-        this(searcher, hits, VisualModes.CONSOLE);
+    public Index(String field, IndexSearcher searcher, ScoreDoc[] hits) {
+        this(field, searcher, hits, VisualModes.CONSOLE);
     }
 
     public Index(String field, IndexSearcher searcher, ScoreDoc[] hits, VisualModes mode) {
