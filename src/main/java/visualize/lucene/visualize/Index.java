@@ -3,13 +3,17 @@ package visualize.lucene.visualize;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
-import visualize.lucene.Inverted;
+import visualize.lucene.VisualizeLucene;
 
 import java.io.IOException;
 import java.util.logging.Logger;
 
 public class Index {
-    private static final Logger logger = Logger.getLogger(String.valueOf(Inverted.class));
+    private static final Logger logger = Logger.getLogger(String.valueOf(VisualizeLucene.class));
+    private String field;
+    private IndexSearcher searcher;
+    private ScoreDoc[] hits;
+    private VisualModes mode;
     enum VisualModes {
         CONSOLE,
         WEB
@@ -20,13 +24,16 @@ public class Index {
     }
 
     public Index(String field, IndexSearcher searcher, ScoreDoc[] hits, VisualModes mode) {
-        visualize(field, searcher, hits, mode);
+        this.field = field;
+        this.searcher = searcher;
+        this.hits = hits;
+        this.mode = mode;
     }
 
-    public void visualize(String fields, IndexSearcher searcher, ScoreDoc[] hits, VisualModes mode) {
+    public void visualize() {
         switch(mode) {
             case CONSOLE:
-                printToConsole(fields, searcher, hits);
+                printToConsole(field, searcher, hits);
                 break;
             case WEB:
                 logger.info("the web option is currently under develop");

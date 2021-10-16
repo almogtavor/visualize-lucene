@@ -7,30 +7,73 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.index.*;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.util.BytesRef;
-import visualize.lucene.Inverted;
+import visualize.lucene.VisualizeLucene;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.logging.Logger;
 
 public class InvertedIndex {
-    private static final Logger logger = Logger.getLogger(String.valueOf(Inverted.class));
+    private static final Logger logger = Logger.getLogger(String.valueOf(VisualizeLucene.class));
     @Getter
     private static Map<String, Set<String>> invertedIndex;
-    private Path path;
 
-    public InvertedIndex(Path path) {
-        this.path = path;
+    public InvertedIndex(IndexSearcher searcher, IndexReader reader, Query query, TopDocs topDocs) {
+        calculateIndex(searcher, reader, query, topDocs);
+    }
+
+    public void calculateIndex(IndexSearcher searcher, IndexReader reader, Query query, TopDocs topDocs) {
+        try {
+//            MatchAllDocsQuery query = new MatchAllDocsQuery();
+//            TopDocs hits = searcher.search(query, Integer.MAX_VALUE);
+            BiFunction<Integer, Integer, Set<String>> mergeValue =
+                    (docId, pos) -> {
+                        TreeSet<String> treeSet = new TreeSet<>();
+                        treeSet.add((docId + 1) + ":" + pos);
+                        return treeSet;
+                    };
+
+            invertedIndex = new HashMap<>();
+//            for (ScoreDoc scoreDoc : hits.scoreDocs) {
+            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                Fields termVs = reader.getTermVectors(scoreDoc.doc);
+                Terms terms = termVs.terms("title");
+                TermsEnum termsIt = terms.iterator();
+                PostingsEnum docsAndPosEnum = null;
+                BytesRef bytesRef;
+                while ((bytesRef = termsIt.next()) != null) {
+                    docsAndPosEnum = termsIt.postings(docsAndPosEnum, PostingsEnum.ALL);
+                    docsAndPosEnum.nextDoc();
+                    int pos = docsAndPosEnum.nextPosition();
+                    String term = bytesRef.utf8ToString();
+                    invertedIndex.merge(
+                            term,
+                            mergeValue.apply(scoreDoc.doc, pos),
+                            (s1, s2) -> {
+                                s1.addAll(s2);
+                                return s1;
+                            });
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void visualize() {
+        invertedIndex.forEach((key, value) -> {
+            String row = key + ":" + value;
+            System.out.println(row);
+        });
     }
 
     public void vis(String path) {
@@ -99,17 +142,10 @@ public class InvertedIndex {
                     }
                 }
 
-                visualizeInvertedIndex(invertedIndex);
+                visualize();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void visualizeInvertedIndex(Map<String, Set<String>> invertedIndex) {
-        invertedIndex.forEach((key, value) -> {
-            String row = key + ":" + value;
-            System.out.println(row);
-        });
     }
 }
