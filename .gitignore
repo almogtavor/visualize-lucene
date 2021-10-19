@@ -27,6 +27,7 @@ hs_err_pid*
 gradle
 gradlew.bat
 codeLuceneindex-viz-output
+inverted-index-vis
 target/classes/application.properties
 target/classes/log4j2.xml
 target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst
