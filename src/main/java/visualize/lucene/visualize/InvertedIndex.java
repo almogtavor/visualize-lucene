@@ -1,6 +1,9 @@
 package visualize.lucene.visualize;
 
+import com.jakewharton.picnic.Table;
 import lombok.Getter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -11,7 +14,6 @@ import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.util.BytesRef;
-import visualize.lucene.VisualizeLucene;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -20,14 +22,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
-import java.util.logging.Logger;
 
 public class InvertedIndex {
-    private static final Logger logger = Logger.getLogger(String.valueOf(VisualizeLucene.class));
+    private static final Logger logger = LogManager.getRootLogger();
     @Getter
     private static Map<String, Set<String>> invertedIndex;
 
     public InvertedIndex(IndexSearcher searcher, IndexReader reader, Query query, TopDocs topDocs) {
+        logger.info("almog");
         calculateIndex(searcher, reader, query, topDocs);
     }
 

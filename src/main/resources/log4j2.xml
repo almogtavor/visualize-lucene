@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="ERROR">
+<Configuration status="INFO">
     <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        <Console name="SlowConsole" target="SYSTEM_OUT">
+            <PatternLayout disableAnsi="false" pattern="%style{[%t]}{blue}"/>
         </Console>
     </Appenders>
     <Appenders>
@@ -12,7 +12,7 @@
     </Appenders>
     <Loggers>
         <Root level="error">
-            <AppenderRef ref="Console"/>
+            <AppenderRef ref="SlowConsole"/>
         </Root>
     </Loggers>
 </Configuration>
