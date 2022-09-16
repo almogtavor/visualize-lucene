@@ -5,10 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.SortedDocValuesField;
-import org.apache.lucene.document.TextField;
+import org.apache.lucene.document.*;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -45,6 +42,25 @@ public class InMemoryLuceneIndex {
 
             document.add(new TextField("title", title, Field.Store.YES));
             document.add(new TextField("body", body, Field.Store.YES));
+            document.add(new SortedDocValuesField("title", new BytesRef(title)));
+
+            writter.addDocument(document);
+            writter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void indexDocumentWithTwoFields(String title, String body, String blaValue) {
+
+        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
+        try {
+            IndexWriter writter = new IndexWriter(memoryIndex, indexWriterConfig);
+            Document document = new Document();
+
+            document.add(new TextField("title", title, Field.Store.YES));
+            document.add(new TextField("body", body, Field.Store.YES));
+            document.add(new StringField("bla", blaValue, Field.Store.YES));
             document.add(new SortedDocValuesField("title", new BytesRef(title)));
 
             writter.addDocument(document);
