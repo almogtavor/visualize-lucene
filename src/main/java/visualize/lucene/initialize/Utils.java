@@ -15,7 +15,6 @@ public class Utils {
         // Optional
         type.setStoreTermVectorPositions(true);
         type.setStoreTermVectorOffsets(true);
-
         doc.add(new Field("title", title, type));
         doc.add(new Field("isbn", isbn, type));
         w.addDocument(doc);

@@ -15,23 +15,36 @@ repositories {
 }
 
 dependencies {
-    implementation("org.apache.lucene:lucene-core:8.9.0")
-    implementation("org.apache.lucene:lucene-queries:8.9.0")
-    implementation("org.apache.lucene:lucene-test-framework:8.9.0")
-    implementation("org.apache.lucene:lucene-analyzers-common:8.9.0")
-    implementation("org.apache.lucene:lucene-queryparser:8.9.0")
-    implementation("org.projectlombok:lombok:RELEASE")
-    implementation("org.apache.logging.log4j:log4j-core:2.14.1")
-    implementation("com.jakewharton.picnic:picnic:0.5.0")
+    implementation("org.apache.lucene:lucene-core:9.3.0")
+    implementation("org.apache.lucene:lucene-queries:9.3.0")
+    implementation("org.apache.lucene:lucene-test-framework:9.3.0")
+    implementation("org.apache.lucene:lucene-analyzers-common:8.11.2")
+    implementation("org.apache.lucene:lucene-queryparser:9.3.0")
+    implementation("org.projectlombok:lombok:1.18.22")
+    implementation("org.apache.lucene:lucene-backward-codecs:9.3.0")
+    implementation("org.apache.lucene:lucene-codecs:9.3.0")
+    annotationProcessor("org.projectlombok:lombok:1.18.22")
+    implementation("org.apache.logging.log4j:log4j-core:2.18.0")
+    implementation("com.jakewharton.picnic:picnic:0.6.0")
 }
 
 group = "org.lucene.visualize"
 version = "1.0.0"
 description = "visualize-lucene"
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_11
 
 publishing {
     publications.create<MavenPublication>("maven") {
         from(components["java"])
+    }
+}
+
+tasks.test {
+//    useJUnitPlatform()
+    testLogging {
+        showStandardStreams = true
+//        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+//        events("skipped", "failed")
+        events("passed", "skipped", "failed", "standardOut", "standardError")
     }
 }

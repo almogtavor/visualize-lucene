@@ -47,6 +47,7 @@ public class Index {
         for (int i = 0; i < hits.length; ++i) {
             try {
                 int docId = hits[i].doc;
+                // TODO: read with read instead of searcher.doc
                 Document d = searcher.doc(docId);
                 String msg = String.format("%d. %s\t%s", i + 1, d.get("isbn"), d.get(fields));
                 System.out.println(msg);

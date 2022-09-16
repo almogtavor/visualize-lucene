@@ -17,10 +17,7 @@ import org.apache.lucene.util.BytesRef;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.BiFunction;
 
 public class InvertedIndex {
@@ -37,16 +34,19 @@ public class InvertedIndex {
         try {
 //            MatchAllDocsQuery query = new MatchAllDocsQuery();
 //            TopDocs hits = searcher.search(query, Integer.MAX_VALUE);
-            BiFunction<Integer, Integer, Set<String>> mergeValue =
+            BiFunction<Integer, Integer, Set<String>> integerIntegerToSetBiFunction =
                     (docId, pos) -> {
-                        TreeSet<String> treeSet = new TreeSet<>();
-                        treeSet.add((docId + 1) + ":" + pos);
-                        return treeSet;
+                        HashSet<String> hashSet = new HashSet<>();
+                        hashSet.add(docId + ":" + pos);
+                        return hashSet;
                     };
 
             invertedIndex = new HashMap<>();
 //            for (ScoreDoc scoreDoc : hits.scoreDocs) {
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                // TODO: look at this for astronaut
+                searcher.explain(query, scoreDoc.doc);
+
                 Fields termVs = reader.getTermVectors(scoreDoc.doc);
                 Terms terms = termVs.terms("title");
                 TermsEnum termsIt = terms.iterator();
@@ -59,7 +59,7 @@ public class InvertedIndex {
                     String term = bytesRef.utf8ToString();
                     invertedIndex.merge(
                             term,
-                            mergeValue.apply(scoreDoc.doc, pos),
+                            integerIntegerToSetBiFunction.apply(scoreDoc.doc, pos),
                             (s1, s2) -> {
                                 s1.addAll(s2);
                                 return s1;
@@ -72,6 +72,7 @@ public class InvertedIndex {
     }
 
     public void visualize() {
+        System.out.println("term:[id:pos, id:pos]");
         invertedIndex.forEach((key, value) -> {
             String row = key + ":" + value;
             System.out.println(row);
