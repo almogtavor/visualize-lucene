@@ -3,6 +3,7 @@ package visualize.lucene;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -10,9 +11,18 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
+import org.apache.lucene.queryparser.flexible.core.QueryNodeParseException;
+import org.apache.lucene.queryparser.flexible.core.builders.QueryBuilder;
+import org.apache.lucene.queryparser.flexible.core.nodes.ProximityQueryNode;
+import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
+import org.apache.lucene.queryparser.flexible.core.parser.SyntaxParser;
+import org.apache.lucene.queryparser.flexible.core.processors.QueryNodeProcessor;
+import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.queryparser.surround.query.AndQuery;
 import org.apache.lucene.queryparser.xml.QueryBuilderFactory;
 import org.apache.lucene.search.*;
+import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.junit.Assert;
@@ -114,10 +124,10 @@ public class LuceneInMemorySearchIntegrationTest {
 
     @Test
     public void givenSortFieldWhenSortedThenCorrect() throws IOException {
-        MMapDirectory memoryIndex = new MMapDirectory(Path.of("/test_dir"));
+        ByteBuffersDirectory memoryIndex = new ByteBuffersDirectory();
         InMemoryLuceneIndex inMemoryLuceneIndex = new InMemoryLuceneIndex(memoryIndex, new StandardAnalyzer());
         inMemoryLuceneIndex.indexDocument("Ganges", "River in India");
-        inMemoryLuceneIndex.indexDocument("Mekong", "This river flows in south Asia");
+        inMemoryLuceneIndex.indexDocumentWithTwoFields("Mekong", "This river flows in south Asia", "zoo");
         inMemoryLuceneIndex.indexDocument("Amazon", "Rain forest river");
         inMemoryLuceneIndex.indexDocumentWithTwoFields("Rhine", "Belongs to Europe", "zoo");
         inMemoryLuceneIndex.indexDocumentWithTwoFields("Nile", "Longest River", "zoo");
@@ -147,7 +157,87 @@ public class LuceneInMemorySearchIntegrationTest {
             documents.add(searcher.doc(scoreDoc.doc));
             System.out.println(searcher.explain(booleanQuery, scoreDoc.doc));
         }
-        Assert.assertEquals(4, documents.size());
+        Assert.assertEquals(2, documents.size());
+//        Assert.assertEquals("Amazon", documents.get(0).getField("title").stringValue());
+    }
+
+
+    @Test
+    public void givenSortFieldWhenSortedThenCorrect2() throws IOException {
+        ByteBuffersDirectory memoryIndex = new ByteBuffersDirectory();
+        InMemoryLuceneIndex inMemoryLuceneIndex = new InMemoryLuceneIndex(memoryIndex, new StandardAnalyzer());
+        inMemoryLuceneIndex.indexDocument("Ganges", "River in India");
+        inMemoryLuceneIndex.indexDocumentWithTwoFields("Mekong", "This river flows in south Asia", "zoo");
+        inMemoryLuceneIndex.indexDocument("Amazon", "Rain forest river");
+        inMemoryLuceneIndex.indexDocumentWithTwoFields("Rhine", "Belongs to Europe", "zoo");
+        inMemoryLuceneIndex.indexDocumentWithTwoFields("Nile", "Longest River", "zoo");
+
+
+        TermQuery query1 = new TermQuery(new Term("body", "river"));
+        TermQuery query2 = new TermQuery(new Term("bla", "zoo"));
+
+        BooleanQuery booleanQuery = new BooleanQuery.Builder().add(query1, BooleanClause.Occur.MUST)
+                .add(query2, BooleanClause.Occur.FILTER).build();
+        booleanQuery.visit(new QueryVisitor() {
+            @Override
+            public QueryVisitor getSubVisitor(BooleanClause.Occur occur, Query parent) {
+                return super.getSubVisitor(occur, parent);
+            }
+        });
+        SortField sortField = new SortField("title", SortField.Type.STRING_VAL, false);
+        Sort sortByTitle = new Sort(sortField);
+
+//        List<Document> documents = inMemoryLuceneIndex.searchIndex(query, sortByTitle);
+
+        IndexReader indexReader = DirectoryReader.open(memoryIndex);
+        IndexSearcher searcher = new IndexSearcher(indexReader);
+        TopDocs topDocs = searcher.search(booleanQuery, 10);
+        List<Document> documents = new ArrayList<>();
+        for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+            documents.add(searcher.doc(scoreDoc.doc));
+            System.out.println(searcher.explain(booleanQuery, scoreDoc.doc));
+        }
+        try {
+            final String def = "content";
+            SyntaxParser parser = new StandardQueryParser().getSyntaxParser();
+            QueryNodeProcessor processor = new StandardQueryParser().getQueryNodeProcessor();
+            QueryBuilder builder = new StandardQueryParser().getQueryBuilder();
+
+            QueryNode q = new ProximityQueryNode(
+                    Arrays.<QueryNode>asList(new org.apache.lucene.queryparser.flexible.core.nodes.FieldQueryNode(
+                            def, "foo bar", 0, "foo bar".length())),
+                    def, ProximityQueryNode.Type.NUMBER, 3, false);
+
+            ArrayList<QueryNode> parsed = new ArrayList<>();
+            //         parsed.add(parser.parse("\"test boo\"~2", def));
+            //         parsed.add(parser.parse("confusion~2", def));
+            //         parsed.add(parser.parse("foo AND bar", def));
+            //         parsed.add(parser.parse("(optional OR keuze) AND (field OR metastase)", def));
+            parsed.add(parser.parse("(\"letter comes\"~3 \"agitated employees\"~4 \"worried about salaries\"~1)"
+                    + " AND (\"letter comes agitated employees worried about salaries\"~8)", def));
+            parsed.add(parser.parse("\"d.d\"", def));
+
+            ArrayList<QueryNode> queries = new ArrayList<>();
+            queries.addAll(parsed);
+            //         queries.add(q);
+
+            //         queries.add(new OrQueryNode(parsed));
+            //         queries.add(new ProximityQueryNode(parsed, def, ProximityQueryNode.Type.NUMBER, 5, false));
+            //         queries.add(new ProximityQueryNode(Arrays.asList(queries.get(3), queries.get(4)), null, ProximityQueryNode.Type.NUMBER, 8, false));
+
+            for (QueryNode n : queries) {
+                System.out.println(n.toString());
+                System.out.println();
+                System.out.println(processor.process(n).toString());
+                System.out.println();
+                System.out.println();
+                System.out.println();
+                System.out.println();
+            }
+        } catch (QueryNodeException ex) {
+            throw new Error(ex);
+        }
+        Assert.assertEquals(2, documents.size());
 //        Assert.assertEquals("Amazon", documents.get(0).getField("title").stringValue());
     }
 
