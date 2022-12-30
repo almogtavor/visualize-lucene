@@ -62,28 +62,35 @@ public class LuceneQueryFilterFinder {
             int docId = topDocs.scoreDocs[i].doc;
             Document document = indexSearcher.doc(docId);
             List<String> responsibleParams = findResponsibleParams(document, query, indexReader, docId, indexSearcher);
-            System.out.println(responsibleParams);  // Output: [field1:value1, field2:value2] or [field3:value3]
+            System.out.println(responsibleParams);
         }
     }
     public static List<String> findResponsibleParams(Document document, Query query, IndexReader indexReader, int docId, IndexSearcher indexSearcher) {
         List<String> responsibleParams = new ArrayList<>();
 
         if (query instanceof BooleanQuery) {
-            BooleanQuery booleanQuery = (BooleanQuery) query;
-            for (BooleanClause clause : booleanQuery.clauses()) {
-                Query subQuery = clause.getQuery();
-                List<String> subQueryParams = findResponsibleParams(document, subQuery, indexReader, docId, indexSearcher);
-                if (!subQueryParams.isEmpty()) {
-                    responsibleParams.addAll(subQueryParams);
+            try {
+                if (indexSearcher.explain(query, docId).isMatch()) {
+                    BooleanQuery booleanQuery = (BooleanQuery) query;
+                    for (BooleanClause clause : booleanQuery.clauses()) {
+                        Query subQuery = clause.getQuery();
+                        List<String> subQueryParams = findResponsibleParams(document, subQuery, indexReader, docId, indexSearcher);
+                        if (!subQueryParams.isEmpty()) {
+                            responsibleParams.addAll(subQueryParams);
+                        }
+                    }
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         } else {
             // Check if the document matches the current query
             try {
-                indexSearcher.createWeight(query, ScoreMode.TOP_DOCS, 1f).scorer(indexReader.leaves().get(0));
-                responsibleParams.add(query.toString());
+                if (indexSearcher.explain(query, docId).isMatch()) {
+                    responsibleParams.add(query.toString());
+                }
             } catch (IOException e) {
-                // Document does not match the query
+                e.printStackTrace();
             }
         }
 
