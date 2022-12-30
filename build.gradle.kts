@@ -4,6 +4,7 @@
 
 plugins {
     java
+//    kotlin-dsl
     `maven-publish`
 }
 
@@ -17,6 +18,10 @@ repositories {
 dependencies {
     implementation("org.apache.lucene:lucene-core:9.3.0")
     implementation("org.apache.lucene:lucene-queries:9.3.0")
+    implementation("org.apache.lucene:lucene-core:9.3.0")
+    implementation("org.apache.lucene:lucene-queries:9.3.0")
+    implementation("org.apache.lucene:lucene-memory:9.3.0")
+    implementation("org.apache.lucene:lucene-backward-codecs:9.3.0")
     implementation("org.apache.lucene:lucene-test-framework:9.3.0")
     implementation("org.apache.lucene:lucene-analyzers-common:8.11.2")
     implementation("org.apache.lucene:lucene-queryparser:9.3.0")
@@ -26,6 +31,8 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.22")
     implementation("org.apache.logging.log4j:log4j-core:2.18.0")
     implementation("com.jakewharton.picnic:picnic:0.6.0")
+    implementation("org.apache.solr:solr-core:9.1.0")
+    implementation("org.apache.solr:solr-solrj:9.1.0")
 }
 
 group = "org.lucene.visualize"
